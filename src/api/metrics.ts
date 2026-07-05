@@ -1,6 +1,6 @@
 /** Prometheus registry: default process metrics + per-queue job gauge. */
 import { Registry, Gauge, collectDefaultMetrics } from 'prom-client';
-import type { QueueAdapter } from '../adapters/types.ts';
+import type { QueueAdapter } from '../adapters/types.js';
 
 export function createRegistry(adapter: QueueAdapter): Registry {
   const registry = new Registry();

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import type { QueueAdapter } from '../../adapters/types.ts';
+import type { QueueAdapter } from '../../adapters/types.js';
 
 export function healthRouter(adapter: QueueAdapter): Router {
   const router = Router();
