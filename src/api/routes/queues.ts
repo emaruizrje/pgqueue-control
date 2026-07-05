@@ -1,7 +1,7 @@
 /** Queue listing, per-queue stats, job detail and retry. */
 import { Router } from 'express';
 import { z } from 'zod';
-import type { QueueAdapter } from '../../adapters/types.ts';
+import type { QueueAdapter } from '../../adapters/types.js';
 
 const sinceMinutesSchema = z.coerce.number().int().min(1).max(60 * 24 * 7).default(60);
 

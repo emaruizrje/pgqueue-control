@@ -6,17 +6,17 @@ import express from 'express';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { AbsurdAdapter } from '../adapters/absurd.ts';
-import { PgBossAdapter } from '../adapters/pgboss.ts';
-import type { QueueAdapter } from '../adapters/types.ts';
-import { ServerConfig } from '../helpers/configServer.ts';
-import { basicAuth } from './middleware/auth.ts';
-import { errorHandler } from './middleware/errorHandler.ts';
-import { createRegistry } from './metrics.ts';
-import { healthRouter } from './routes/health.ts';
-import { jobsRouter } from './routes/jobs.ts';
-import { metricsRouter } from './routes/metrics.ts';
-import { queuesRouter } from './routes/queues.ts';
+import { AbsurdAdapter } from '../adapters/absurd.js';
+import { PgBossAdapter } from '../adapters/pgboss.js';
+import type { QueueAdapter } from '../adapters/types.js';
+import { ServerConfig } from '../helpers/configServer.js';
+import { basicAuth } from './middleware/auth.js';
+import { errorHandler } from './middleware/errorHandler.js';
+import { createRegistry } from './metrics.js';
+import { healthRouter } from './routes/health.js';
+import { jobsRouter } from './routes/jobs.js';
+import { metricsRouter } from './routes/metrics.js';
+import { queuesRouter } from './routes/queues.js';
 
 export function createAdapter(config: ServerConfig): QueueAdapter {
   switch (config.queueBackend) {

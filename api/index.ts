@@ -3,7 +3,7 @@
  * here (see vercel.json) and handled by the same Express app the local
  * server uses. Static assets are served by Vercel's CDN, not this function.
  */
-import { createApp } from '../src/api/app.ts';
+import { createApp } from '../src/api/app.js';
 
 const { app } = createApp();
 

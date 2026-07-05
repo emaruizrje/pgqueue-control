@@ -2,7 +2,7 @@
  * pgqueue-control API — local/container entry point.
  * The app itself is assembled in app.ts (also used by the Vercel function).
  */
-import { createApp } from './app.ts';
+import { createApp } from './app.js';
 
 const { app, adapter, config } = createApp();
 

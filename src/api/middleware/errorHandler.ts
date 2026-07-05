@@ -1,7 +1,7 @@
 /** Zod validation errors -> 400, unknown queue -> 404, everything else -> 500 */
 import type express from 'express';
 import { z } from 'zod';
-import { QueueNotFoundError } from '../../adapters/absurd.ts';
+import { QueueNotFoundError } from '../../adapters/absurd.js';
 
 export function errorHandler(): express.ErrorRequestHandler {
   return (err: unknown, _req, res, _next) => {

@@ -1,7 +1,7 @@
 /** Cross-queue job listing with state and date-range filters. */
 import { Router } from 'express';
 import { z } from 'zod';
-import type { QueueAdapter } from '../../adapters/types.ts';
+import type { QueueAdapter } from '../../adapters/types.js';
 
 const listJobsQuery = z
   .object({
