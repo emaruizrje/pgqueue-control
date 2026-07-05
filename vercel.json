@@ -1,0 +1,10 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "npm install && npm --prefix dashboard install",
+  "buildCommand": "npm run dashboard:build",
+  "outputDirectory": "public",
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "/api" },
+    { "source": "/metrics", "destination": "/api" }
+  ]
+}
