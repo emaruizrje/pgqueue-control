@@ -24,6 +24,20 @@ const connectionString =
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const pick = <T,>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)]!;
 
+/** Volume multiplier: SCALE=4 spawns 4x the base traffic. */
+const SCALE = Math.max(1, Number(process.env.SCALE ?? 1));
+
+/**
+ * Throw a demo failure WITHOUT a stack trace. Absurd persists err.stack into
+ * failure_reason, and a real stack leaks local filesystem paths into the
+ * (potentially public) dashboard. The message alone tells the demo story.
+ */
+function fail(message: string): never {
+  const err = new Error(message);
+  err.stack = `Error: ${message}`;
+  throw err;
+}
+
 async function main() {
   const agents = new Absurd({ db: connectionString, queueName: 'agent-workflows' });
   const pipelines = new Absurd({ db: connectionString, queueName: 'data-pipelines' });
@@ -44,10 +58,10 @@ async function main() {
     const results = await ctx.step('search', async () => {
       await sleep(50 + Math.random() * 150);
       if (params.behavior === 'fail-always') {
-        throw new Error('LLM provider returned 429 repeatedly');
+        fail('LLM provider returned 429 repeatedly');
       }
       if (params.behavior === 'flaky' && Math.random() < 0.6) {
-        throw new Error('Transient network error during search');
+        fail('Transient network error during search');
       }
       return { hits: Math.ceil(Math.random() * 20), plan: plan.topic };
     });
@@ -72,7 +86,7 @@ async function main() {
     });
     const clean = await ctx.step('transform', async () => {
       await sleep(30);
-      if (params.behavior === 'bad-data') throw new Error('Schema validation failed: null in NOT NULL column');
+      if (params.behavior === 'bad-data') fail('Schema validation failed: null in NOT NULL column');
       return { rows: raw.rows, dropped: Math.floor(raw.rows * 0.02) };
     });
     return await ctx.step('load', async () => {
@@ -88,8 +102,8 @@ async function main() {
     });
     const sent = await ctx.step('send-batch', async () => {
       await sleep(60);
-      if (params.behavior === 'smtp-down') throw new Error('SMTP relay connection refused');
-      if (Math.random() < 0.15) throw new Error('Rate limited by email provider');
+      if (params.behavior === 'smtp-down') fail('SMTP relay connection refused');
+      if (Math.random() < 0.15) fail('Rate limited by email provider');
       return { delivered: rendered.recipients - Math.floor(Math.random() * 10) };
     });
     return await ctx.step('record-stats', async () => ({ delivered: sent.delivered }));
@@ -105,7 +119,7 @@ async function main() {
   reports.registerTask({ name: 'generate-report', defaultMaxAttempts: 2 }, async (params: any, ctx) => {
     const data = await ctx.step('gather-data', async () => {
       await sleep(50);
-      if (params.behavior === 'bad-source') throw new Error('Upstream warehouse returned 503');
+      if (params.behavior === 'bad-source') fail('Upstream warehouse returned 503');
       return { rows: Math.ceil(Math.random() * 20000) };
     });
     const agg = await ctx.step('aggregate', async () => {
@@ -125,7 +139,7 @@ async function main() {
 
   console.log('Spawning tasks…');
   const spawns: Promise<unknown>[] = [];
-  for (let i = 0; i < 30; i++) {
+  for (let i = 0; i < 30 * SCALE; i++) {
     const behavior = pick(['ok', 'ok', 'ok', 'flaky', 'fail-always']);
     // Slow retries stay visible as pending-with-attempts ("retry"); fast ones re-run and finish.
     const retryStrategy =
@@ -136,21 +150,21 @@ async function main() {
       agents.spawn('research-agent', { topic: `topic-${i}`, behavior }, { retryStrategy }),
     );
   }
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < 5 * SCALE; i++) {
     spawns.push(agents.spawn('human-review', { docId: `doc-${i}` }));
   }
-  for (let i = 0; i < 25; i++) {
+  for (let i = 0; i < 25 * SCALE; i++) {
     const behavior = pick(['ok', 'ok', 'ok', 'ok', 'bad-data']);
     spawns.push(pipelines.spawn('etl-run', { dataset: `ds-${i}`, behavior }));
   }
-  for (let i = 0; i < 20; i++) {
+  for (let i = 0; i < 20 * SCALE; i++) {
     const behavior = pick(['ok', 'ok', 'ok', 'smtp-down']);
     spawns.push(emails.spawn('send-campaign', { template: `campaign-${i}`, behavior }));
   }
-  for (let i = 0; i < 8; i++) {
+  for (let i = 0; i < 8 * SCALE; i++) {
     spawns.push(emails.spawn('drip-sequence', { userId: `user-${i}` }));
   }
-  for (let i = 0; i < 15; i++) {
+  for (let i = 0; i < 15 * SCALE; i++) {
     const behavior = pick(['ok', 'ok', 'ok', 'bad-source']);
     spawns.push(reports.spawn('generate-report', { report: `weekly-${i}`, behavior }));
   }
