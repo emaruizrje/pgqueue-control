@@ -1,0 +1,36 @@
+<p class="section-label">Queues</p>
+@for (q of store.queues(); track q.name) {
+  <div
+    class="queue-strip"
+    [class.selected]="store.filterQueue() === q.name"
+    tabindex="0"
+    role="button"
+    [attr.aria-label]="'Filter jobs to queue ' + q.name"
+    (click)="store.toggleQueueFilter(q.name)"
+    (keydown.enter)="store.toggleQueueFilter(q.name)"
+    (keydown.space)="$event.preventDefault(); store.toggleQueueFilter(q.name)"
+  >
+    <div class="queue-head">
+      <span class="queue-name">{{ q.name }}</span>
+      @if (q.isDeadLetter) {
+        <span class="dlq-badge">DLQ</span>
+      }
+      <span class="queue-total">{{ total(q) }} jobs</span>
+    </div>
+    <div class="state-bar">
+      @for (s of activeStates(q); track s) {
+        <div class="sb-{{ s }}" [style.flex]="q.counts[s]" [title]="s + ': ' + q.counts[s]"></div>
+      } @empty {
+        <div style="flex: 1"></div>
+      }
+    </div>
+    <div class="queue-counts">
+      @for (s of states; track s) {
+        <span [class.is-zero]="!q.counts[s]">
+          <span class="count-key sb-{{ s }}"></span>{{ s }} <b>{{ q.counts[s] || 0 }}</b>
+        </span>
+      }
+    </div>
+    <app-sparkline [points]="store.stats().get(q.name)" />
+  </div>
+}

@@ -1,0 +1,11 @@
+{
+  "/api": {
+    "target": "http://localhost:4400",
+    "secure": false,
+    "headers": { "Authorization": "Basic YWRtaW46YWRtaW4=" }
+  },
+  "/metrics": {
+    "target": "http://localhost:4400",
+    "secure": false
+  }
+}

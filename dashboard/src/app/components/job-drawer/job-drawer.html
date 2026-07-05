@@ -1,0 +1,61 @@
+<div class="drawer-backdrop" (click)="close()"></div>
+<aside class="drawer" aria-label="Job detail">
+  <button class="close-btn" (click)="close()">esc</button>
+
+  @if (loadError()) {
+    <p class="drawer-sub">Couldn't load job: {{ loadError() }}</p>
+  } @else if (!job()) {
+    <p class="drawer-sub">loading…</p>
+  } @else {
+    @let j = job()!;
+    <h2>{{ j.id }}</h2>
+    <p class="drawer-sub">
+      {{ j.queue }} · <span class="state-pill st-{{ j.state }}">{{ j.state }}</span>
+    </p>
+
+    @if (j.sourceQueue) {
+      <div class="dlq-trace">
+        Dead-lettered from <b>{{ j.sourceQueue }}</b> —
+        <a (click)="openSource()">view original job</a>
+      </div>
+    }
+
+    <dl class="kv-grid">
+      <dt>attempt</dt><dd>{{ j.retryCount + 1 }} of {{ j.retryLimit + 1 }}</dd>
+      <dt>created</dt><dd>{{ j.createdOn }}</dd>
+      <dt>started</dt><dd>{{ j.startedOn ?? '—' }}</dd>
+      <dt>completed</dt><dd>{{ j.completedOn ?? '—' }}</dd>
+      <dt>next run after</dt><dd>{{ j.startAfter }}</dd>
+      <dt>retained until</dt><dd>{{ j.keepUntil }}</dd>
+      <dt>dead letter</dt><dd>{{ j.deadLetter ?? '—' }}</dd>
+    </dl>
+
+    <p class="json-label">payload</p>
+    <div class="json-block">{{ json(j.data) }}</div>
+    <p class="json-label">output / error</p>
+    <div class="json-block">{{ json(j.output) }}</div>
+
+    @if (j.checkpoints?.length) {
+      <p class="json-label">checkpoints ({{ j.checkpoints!.length }})</p>
+      @for (c of j.checkpoints; track c.name) {
+        <div class="checkpoint">
+          <span class="checkpoint-name">{{ c.name }}</span>
+          <span class="checkpoint-status">{{ c.status }}</span>
+          <div class="json-block">{{ json(c.state) }}</div>
+        </div>
+      }
+    }
+
+    <button
+      class="retry-btn"
+      [disabled]="!retryable() || retrying()"
+      [title]="retryable() ? 'Re-enqueue this job now' : 'Only failed or cancelled jobs can be retried'"
+      (click)="retry()"
+    >
+      Retry job
+    </button>
+    @if (retryResult(); as r) {
+      <span class="retry-result" [class.ok]="r.ok" [class.err]="!r.ok">{{ r.message }}</span>
+    }
+  }
+</aside>
