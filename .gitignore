@@ -7,3 +7,6 @@ dashboard/.angular
 public/
 .idea/
 .claude/
+
+.vercel
+.env*
