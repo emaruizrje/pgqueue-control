@@ -1,0 +1,20 @@
+<header>
+  <h1>pgqueue <span>control</span></h1>
+  <span class="backend-badge">{{ store.backend() }}</span>
+  <span class="refresh-tick"><span class="dot"></span>{{ refreshLabel() }}</span>
+</header>
+
+@if (store.error(); as err) {
+  <div class="error-banner">{{ err }}</div>
+}
+
+<main>
+  <section class="queues" aria-label="Queues">
+    <app-queue-list />
+  </section>
+  <section class="jobs" aria-label="Jobs">
+    <app-jobs-table />
+  </section>
+</main>
+
+<app-job-drawer />

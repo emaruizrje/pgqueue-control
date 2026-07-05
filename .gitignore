@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.env
+*.log
+dashboard/node_modules
+dashboard/.angular
+public/
+.idea/
+.claude/
+.env.local
+.env*.local
+.vercel/

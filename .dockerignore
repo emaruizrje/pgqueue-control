@@ -1,0 +1,10 @@
+node_modules
+dashboard/node_modules
+dashboard/.angular
+public
+dist
+.env
+.git
+.idea
+.claude
+*.log

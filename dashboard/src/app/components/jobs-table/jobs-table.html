@@ -1,0 +1,86 @@
+<p class="section-label">Jobs</p>
+<div class="jobs-toolbar">
+  <select
+    aria-label="Filter by queue"
+    [value]="store.filterQueue()"
+    (change)="store.setFilter({ queue: $any($event.target).value })"
+  >
+    <option value="">all queues</option>
+    @for (q of store.queues(); track q.name) {
+      <option [value]="q.name">{{ q.name }}</option>
+    }
+  </select>
+
+  <select
+    aria-label="Filter by state"
+    [value]="store.filterState()"
+    (change)="store.setFilter({ state: $any($event.target).value })"
+  >
+    <option value="">all states</option>
+    @for (s of states; track s) {
+      <option [value]="s">{{ s }}</option>
+    }
+  </select>
+
+  <input
+    type="search"
+    placeholder="job id…"
+    aria-label="Filter by job id prefix"
+    maxlength="36"
+    spellcheck="false"
+    (input)="onIdInput($any($event.target).value)"
+  />
+
+  <input
+    #fromInput
+    type="datetime-local"
+    aria-label="Created from"
+    title="Created from"
+    (change)="store.setFilter({ from: fromInput.value })"
+  />
+  <input
+    #toInput
+    type="datetime-local"
+    aria-label="Created until"
+    title="Created until"
+    (change)="store.setFilter({ to: toInput.value })"
+  />
+  @if (hasDateFilter()) {
+    <button class="page-btn" title="Clear date filter" (click)="clearDates(fromInput, toInput)">×</button>
+  }
+
+  <span class="spacer"></span>
+  <span class="result-count">{{ store.total() }} jobs · page {{ page() }}/{{ pages() }}</span>
+  <button class="page-btn" aria-label="Previous page" [disabled]="store.offset() === 0" (click)="store.prevPage()">‹</button>
+  <button
+    class="page-btn"
+    aria-label="Next page"
+    [disabled]="store.offset() + store.pageSize >= store.total()"
+    (click)="store.nextPage()"
+  >›</button>
+</div>
+
+<table class="jobs-table">
+  <thead>
+    <tr>
+      <th>id</th><th>queue</th><th>state</th><th>attempt</th><th>created</th><th>duration</th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (j of store.jobs(); track j.id) {
+      <tr class="job-row" tabindex="0"
+          (click)="store.openJob.set({ queue: j.queue, id: j.id })"
+          (keydown.enter)="store.openJob.set({ queue: j.queue, id: j.id })">
+        <td class="job-id">{{ j.id.slice(0, 8) }}</td>
+        <td>{{ j.queue }}</td>
+        <td><span class="state-pill st-{{ j.state }}">{{ j.state }}</span></td>
+        <td>{{ j.retryCount + 1 }}/{{ j.retryLimit + 1 }}</td>
+        <td [title]="j.createdOn">{{ time(j.createdOn) }}</td>
+        <td>{{ duration(j) }}</td>
+      </tr>
+    }
+  </tbody>
+</table>
+@if (store.jobs().length === 0) {
+  <div class="empty-state">No jobs match these filters. Adjust the queue or state filter above.</div>
+}

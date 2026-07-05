@@ -1,0 +1,41 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+      POSTGRES_DB: appdb
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app -d appdb"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  # Generates realistic traffic (successes, retries, dead-lettered jobs)
+  demo-producer:
+    build: .
+    command: npx tsx demo/producer.ts
+    environment:
+      DATABASE_URL: postgres://app:app@postgres:5432/appdb
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  api:
+    build: .
+    environment:
+      DATABASE_URL: postgres://app:app@postgres:5432/appdb
+      PORT: "4400"
+      QUEUE_BACKEND: pgboss
+    ports:
+      - "4400:4400"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  pgdata:
